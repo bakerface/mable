@@ -1,0 +1,39 @@
+{
+  "name": "mable",
+  "version": "0.1.0",
+  "description": "A strongly-typed, functional toolbelt for TypeScript and JavaScript",
+  "author": "Chris Baker <mail.chris.baker@gmail.com>",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": [
+    "strong",
+    "type",
+    "functional",
+    "programming",
+    "typescript",
+    "maybe",
+    "result"
+  ],
+  "homepage": "https://github.com/bakerface/mable#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bakerface/mable.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bakerface/mable/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha -r ts-node/register 'test/**/*.ts'"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.1"
+  }
+}
