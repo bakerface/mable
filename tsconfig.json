@@ -16,6 +16,7 @@
     "target": "es6"
   },
   "exclude": [
+    "lib",
     "node_modules",
     "test"
   ]

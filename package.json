@@ -1,6 +1,6 @@
 {
   "name": "mable",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A strongly-typed, functional toolbelt for TypeScript and JavaScript",
   "author": "Chris Baker <mail.chris.baker@gmail.com>",
   "license": "MIT",

@@ -1,38 +1,43 @@
 import { expect } from "chai";
 import { Maybe } from "../src";
 
+const expect42 = Maybe.caseOf({
+  Just: (value: number) => {
+    expect(value).equals(42);
+  },
+  Nothing: () => {
+    throw new TypeError("Expected Just but found Nothing");
+  },
+});
+
+const expectNothing = Maybe.caseOf({
+  Just: (value: number) => {
+    throw new TypeError(`Expected Nothing but found Just ${value}`);
+  },
+  Nothing: () => {
+    // success
+  },
+});
+
 describe("Maybe", () => {
   describe("#caseOf", () => {
-    it("should match just", (done) => {
-      Maybe.just(42).caseOf({
-        just: (value) => {
-          expect(value).equals(42);
-          done();
-        },
-        nothing: () => {
-          throw new Error("should not match nothing");
-        },
-      });
+    it("should match Just", () => {
+      expect42(Maybe.just(42));
     });
 
-    it("should match nothing", (done) => {
-      Maybe.nothing().caseOf({
-        just: () => {
-          throw new Error("should not match just");
-        },
-        nothing: done,
-      });
+    it("should match Nothing", () => {
+      expectNothing(Maybe.nothing());
     });
   });
 
   describe("#withDefault", () => {
     const orZero = Maybe.withDefault(0);
 
-    it("should return the value for just", () => {
+    it("should return the value for Just", () => {
       expect(orZero(Maybe.just(42))).equals(42);
     });
 
-    it("should return the default for nothing", () => {
+    it("should return the default for Nothing", () => {
       expect(orZero(Maybe.nothing())).equals(0);
     });
   });
@@ -40,25 +45,12 @@ describe("Maybe", () => {
   describe("#map", () => {
     const divideBy = Maybe.map((n: number) => 84 / n);
 
-    it("should map the value for just", (done) => {
-      divideBy(Maybe.just(2)).caseOf({
-        just: (value) => {
-          expect(value).equals(42);
-          done();
-        },
-        nothing: () => {
-          throw new Error("should not match nothing");
-        },
-      });
+    it("should map the value for Just", () => {
+      expect42(divideBy(Maybe.just(2)));
     });
 
-    it("should not map for nothing", (done) => {
-      divideBy(Maybe.nothing()).caseOf({
-        just: () => {
-          throw new Error("should not match just");
-        },
-        nothing: done,
-      });
+    it("should not map for Nothing", () => {
+      expectNothing(divideBy(Maybe.nothing()));
     });
   });
 
@@ -68,34 +60,16 @@ describe("Maybe", () => {
 
     const divideBy = Maybe.flatMap(eightyFourOver);
 
-    it("should flatten to just when mapped to just", (done) => {
-      divideBy(Maybe.just(2)).caseOf({
-        just: (value) => {
-          expect(value).equals(42);
-          done();
-        },
-        nothing: () => {
-          throw new Error("should not match nothing");
-        },
-      });
+    it("should flatten to Just when mapped to Just", () => {
+      expect42(divideBy(Maybe.just(2)));
     });
 
-    it("should flatten to nothing when mapped to nothing", (done) => {
-      divideBy(Maybe.just(0)).caseOf({
-        just: () => {
-          throw new Error("should not match just");
-        },
-        nothing: done,
-      });
+    it("should flatten to Nothing when mapped to Nothing", () => {
+      expectNothing(divideBy(Maybe.just(0)));
     });
 
-    it("should flatten, but not map, for nothing", (done) => {
-      divideBy(Maybe.nothing()).caseOf({
-        just: () => {
-          throw new Error("should not match just");
-        },
-        nothing: done,
-      });
+    it("should flatten to Nothing when passed Nothing", () => {
+      expectNothing(divideBy(Maybe.just(0)));
     });
   });
 });
