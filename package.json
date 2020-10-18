@@ -1,11 +1,9 @@
 {
   "name": "mable",
   "version": "0.2.0",
-  "description": "A strongly-typed, functional toolbelt for TypeScript and JavaScript",
-  "author": "Chris Baker <mail.chris.baker@gmail.com>",
-  "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "keywords": [
     "strong",
     "type",
@@ -15,25 +13,18 @@
     "maybe",
     "result"
   ],
-  "homepage": "https://github.com/bakerface/mable#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bakerface/mable.git"
+  "eslintConfig": {
+    "extends": "./node_modules/@bakerface/typescript-starter/eslint"
   },
-  "bugs": {
-    "url": "https://github.com/bakerface/mable/issues"
+  "nyc": {
+    "extends": "@bakerface/typescript-starter/nyc"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "mocha -r ts-node/register 'test/**/*.ts'"
+    "prepare": "typescript-starter build src/index.ts",
+    "lint": "typescript-starter lint .",
+    "test": "typescript-starter test 'src/**/*.test.*'"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "typescript": "^3.0.1"
+    "@bakerface/typescript-starter": "0.2.0"
   }
 }
