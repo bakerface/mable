@@ -1,14 +1,14 @@
 import assert from "assert";
-import { Maybe } from ".";
+import { Maybe, MaybePattern } from ".";
 
-const pattern: Maybe.Pattern<number, string> = {
+const pattern: MaybePattern<number, string> = {
   Just: (value: number) => `the value is just ${value}`,
   Nothing: () => "the value is nothing",
 };
 
 const toMessage = Maybe.fold(pattern);
 
-function parseNumber(value: string): Maybe.Maybe<number> {
+function parseNumber(value: string): Maybe<number> {
   const n = parseFloat(value);
 
   if (isNaN(n)) {

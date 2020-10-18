@@ -1,14 +1,14 @@
 import assert from "assert";
-import { Maybe, Result } from ".";
+import { Maybe, Result, ResultPattern } from ".";
 
-const pattern: Result.Pattern<string, number, string> = {
+const pattern: ResultPattern<string, number, string> = {
   Err: (value) => `Err: ${value}`,
   Ok: (value) => `Ok: ${value}`,
 };
 
 const toMessage = Result.fold(pattern);
 
-function parseNumber(value: string): Result.Result<string, number> {
+function parseNumber(value: string): Result<string, number> {
   const n = parseFloat(value);
 
   if (isNaN(n)) {
