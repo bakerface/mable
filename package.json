@@ -1,6 +1,8 @@
 {
   "name": "mable",
   "version": "0.2.0",
+  "description": "A strongly-typed, functional toolbelt for TypeScript and JavaScript",
+  "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
