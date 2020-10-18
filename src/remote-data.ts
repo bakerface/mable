@@ -1,6 +1,6 @@
 import { Maps } from "./helpers";
-import { Just, Maybe, Nothing, fold as foldMaybe } from "./maybe";
-import { Result, caseOf as caseOfResult } from "./result";
+import * as Maybe from "./maybe";
+import * as Result from "./result";
 
 export type RemoteData<F, S> = NotAsked | Loading | Failure<F> | Success<S>;
 
@@ -108,24 +108,28 @@ export function withDefault<F, S>(value: S): Maps<RemoteData<F, S>, S> {
   });
 }
 
-export function toMaybe<F, S>(data: RemoteData<F, S>): Maybe<S> {
-  return caseOf<F, S, Maybe<S>>(data, {
-    NotAsked: () => Nothing,
-    Loading: () => Nothing,
-    Failure: () => Nothing,
-    Success: Just,
+export function toMaybe<F, S>(data: RemoteData<F, S>): Maybe.Maybe<S> {
+  return caseOf<F, S, Maybe.Maybe<S>>(data, {
+    NotAsked: () => Maybe.Nothing,
+    Loading: () => Maybe.Nothing,
+    Failure: () => Maybe.Nothing,
+    Success: Maybe.Just,
   });
 }
 
-export function fromMaybe<F, S>(error: F): Maps<Maybe<S>, RemoteData<F, S>> {
-  return foldMaybe<S, RemoteData<F, S>>({
+export function fromMaybe<F, S>(
+  error: F
+): Maps<Maybe.Maybe<S>, RemoteData<F, S>> {
+  return Maybe.fold<S, RemoteData<F, S>>({
     Just: Success,
     Nothing: () => Failure(error),
   });
 }
 
-export function fromResult<F, S>(result: Result<F, S>): RemoteData<F, S> {
-  return caseOfResult<F, S, RemoteData<F, S>>(result, {
+export function fromResult<F, S>(
+  result: Result.Result<F, S>
+): RemoteData<F, S> {
+  return Result.caseOf<F, S, RemoteData<F, S>>(result, {
     Err: Failure,
     Ok: Success,
   });

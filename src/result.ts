@@ -1,5 +1,5 @@
 import { Maps } from "./helpers";
-import { Just, Maybe, Nothing, fold as foldMaybe } from "./maybe";
+import * as Maybe from "./maybe";
 
 export type Result<E, O> = Err<E> | Ok<O>;
 
@@ -77,15 +77,15 @@ export function withDefault<E, O>(value: O): Maps<Result<E, O>, O> {
   });
 }
 
-export function toMaybe<E, O>(result: Result<E, O>): Maybe<O> {
-  return caseOf<E, O, Maybe<O>>(result, {
-    Err: () => Nothing,
-    Ok: Just,
+export function toMaybe<E, O>(result: Result<E, O>): Maybe.Maybe<O> {
+  return caseOf<E, O, Maybe.Maybe<O>>(result, {
+    Err: () => Maybe.Nothing,
+    Ok: Maybe.Just,
   });
 }
 
-export function fromMaybe<E, O>(error: E): Maps<Maybe<O>, Result<E, O>> {
-  return foldMaybe<O, Result<E, O>>({
+export function fromMaybe<E, O>(error: E): Maps<Maybe.Maybe<O>, Result<E, O>> {
+  return Maybe.fold<O, Result<E, O>>({
     Just: Ok,
     Nothing: () => Err(error),
   });
