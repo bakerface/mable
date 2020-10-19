@@ -30,6 +30,6 @@
     "test": "typescript-starter test 'src/**/*.test.*'"
   },
   "devDependencies": {
-    "@bakerface/typescript-starter": "0.2.0"
+    "@bakerface/typescript-starter": "0.2.1"
   }
 }
