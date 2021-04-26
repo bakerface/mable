@@ -227,12 +227,18 @@ describe("RemoteData", () => {
 
   describe("RemoteData.fromResult", () => {
     it("can convert Err to remote data", () => {
-      const message = toMessage(RemoteData.fromResult(Result.Err("An error")));
+      const message = toMessage(
+        RemoteData.fromResult<string, number>(Result.Err("An error"))
+      );
+
       assert.strictEqual(message, "Failure: An error");
     });
 
     it("can convert Ok to remote data", () => {
-      const message = toMessage(RemoteData.fromResult(Result.Ok(42)));
+      const message = toMessage(
+        RemoteData.fromResult<string, number>(Result.Ok(42))
+      );
+
       assert.strictEqual(message, "Success: 42");
     });
   });
