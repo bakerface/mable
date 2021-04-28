@@ -1,71 +1,67 @@
-import { Maps } from "./helpers";
+import { CaseOfPattern, OneOf } from "./one-of";
 
-export type Maybe<T> = Just<T> | Nothing;
+export type MaybeVariants<T> = {
+  Nothing: [];
+  Just: [value: T];
+};
 
-export interface Just<T> {
-  readonly type: "Just";
-  readonly payload: T;
-}
+export type MaybePattern<T, R> = CaseOfPattern<MaybeVariants<T>, R>;
 
-export function Just<T>(payload: T): Just<T> {
-  return { type: "Just", payload };
-}
+export class Maybe<T> extends OneOf<MaybeVariants<T>> {
+  static Nothing = new Maybe<any>("Nothing");
 
-export interface Nothing {
-  readonly type: "Nothing";
-}
-
-export const Nothing: Nothing = { type: "Nothing" };
-
-export interface Pattern<T, Return> {
-  Just(value: T): Return;
-  Nothing(): Return;
-}
-
-export function caseOf<T, Return>(
-  maybe: Maybe<T>,
-  pattern: Pattern<T, Return>
-): Return {
-  switch (maybe.type) {
-    case "Just":
-      return pattern.Just(maybe.payload);
-
-    case "Nothing":
-      return pattern.Nothing();
-  }
-}
-
-export function fold<T, Return>(
-  pattern: Pattern<T, Return>
-): Maps<Maybe<T>, Return> {
-  return (maybe) => caseOf(maybe, pattern);
-}
-
-export function map<A, B>(fn: Maps<A, B>): Maps<Maybe<A>, Maybe<B>> {
-  return fold<A, Maybe<B>>({
-    Just: (x) => Just(fn(x)),
-    Nothing: () => Nothing,
-  });
-}
-
-export function flatMap<A, B>(fn: Maps<A, Maybe<B>>): Maps<Maybe<A>, Maybe<B>> {
-  return fold<A, Maybe<B>>({
-    Just: fn,
-    Nothing: () => Nothing,
-  });
-}
-
-export function withDefault<T>(value: T): Maps<Maybe<T>, T> {
-  return fold<T, T>({
-    Just: (x) => x,
-    Nothing: () => value,
-  });
-}
-
-export function of<T>(value: T | null | undefined): Maybe<T> {
-  if (typeof value === "undefined" || value === null) {
-    return Nothing;
+  static Just<T>(value: T): Maybe<T> {
+    return new Maybe("Just", value);
   }
 
-  return Just(value);
+  static of<T>(value?: T | null): Maybe<T> {
+    if (typeof value === "undefined" || value === null) {
+      return Maybe.Nothing;
+    }
+
+    return Maybe.Just(value);
+  }
+
+  static caseOf<T, Return>(
+    pattern: MaybePattern<T, Return>
+  ): (maybe: Maybe<T>) => Return {
+    return (maybe) => maybe.caseOf(pattern);
+  }
+
+  static map<T, Return>(
+    fn: (value: T) => Return
+  ): (maybe: Maybe<T>) => Maybe<Return> {
+    return (maybe) => maybe.map(fn);
+  }
+
+  static flatMap<T, Return>(
+    fn: (value: T) => Maybe<Return>
+  ): (maybe: Maybe<T>) => Maybe<Return> {
+    return (maybe) => maybe.flatMap(fn);
+  }
+
+  static otherwise<T, O>(value?: O | null): (maybe: Maybe<T>) => Maybe<T | O> {
+    return (maybe) => maybe.otherwise(value);
+  }
+
+  map<Return>(fn: (value: T) => Return): Maybe<Return> {
+    return this.caseOf<Maybe<Return>>({
+      Nothing: () => Maybe.Nothing,
+      Just: (value) => Maybe.Just(fn(value)),
+    });
+  }
+
+  flatMap<Return>(fn: (value: T) => Maybe<Return>): Maybe<Return> {
+    return this.caseOf<Maybe<Return>>({
+      Nothing: () => Maybe.Nothing,
+      Just: (value) => fn(value),
+    });
+  }
+
+  otherwise<O>(value?: O | null): Maybe<T | O> {
+    return this.caseOf<Maybe<T | O>>({
+      Nothing: () => Maybe.of(value),
+      Just: (v) => Maybe.Just(v),
+    });
+  }
 }

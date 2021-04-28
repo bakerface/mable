@@ -1,139 +1,119 @@
 import assert from "assert";
-import { Maybe, Result, ResultPattern } from ".";
+import { Maybe } from "./maybe";
+import { Result, ResultPattern } from "./result";
 
-const pattern: ResultPattern<string, number, string> = {
-  Err: (value) => `Err: ${value}`,
-  Ok: (value) => `Ok: ${value}`,
+const toStringPattern: ResultPattern<string, number, string> = {
+  Err: (err) => `Err ${err}`,
+  Ok: (value) => `Ok ${value}`,
 };
 
-const toMessage = Result.fold(pattern);
+const toString = Result.caseOf(toStringPattern);
+
+const toMaybeString = Maybe.caseOf({
+  Just: (value) => `Just ${value}`,
+  Nothing: () => "Nothing",
+});
 
 function parseNumber(value: string): Result<string, number> {
   const n = parseFloat(value);
 
   if (isNaN(n)) {
-    return Result.Err(`Expected ${value} to be a number`);
+    return Result.Err("NaN");
   }
 
   return Result.Ok(n);
 }
 
 describe("Result", () => {
-  describe("Result.caseOf", () => {
-    it("matches Err when the value is an error", () => {
-      const result = Result.Err("An error");
-      const message = Result.caseOf(result, pattern);
-
-      assert.strictEqual(message, "Err: An error");
+  describe(".caseOf", () => {
+    it("calls Err when the value is Err", () => {
+      assert.strictEqual(toString(Result.Err("message")), "Err message");
     });
 
-    it("matches Ok when the value is ok", () => {
-      const result = Result.Ok(42);
-      const message = Result.caseOf(result, pattern);
-
-      assert.strictEqual(message, "Ok: 42");
+    it("calls Ok when the value is Ok", () => {
+      assert.strictEqual(toString(Result.Ok(42)), "Ok 42");
     });
   });
 
-  describe("Result.fold", () => {
-    it("matches Err when the value is an error", () => {
-      assert.strictEqual(toMessage(Result.Err("An error")), "Err: An error");
+  describe(".map", () => {
+    const twice = Result.map<any, number, number>((value: number) => value * 2);
+
+    it("returns Err when the value is Err", () => {
+      assert.strictEqual(toString(twice(Result.Err("message"))), "Err message");
     });
 
-    it("matches Ok when the value is ok", () => {
-      assert.strictEqual(toMessage(Result.Ok(42)), "Ok: 42");
-    });
-  });
-
-  describe("Result.map", () => {
-    const twice = Result.map<string, number, number>((value) => value * 2);
-
-    it("returns Err when the value is an error", () => {
-      assert.strictEqual(
-        toMessage(twice(Result.Err("An error"))),
-        "Err: An error"
-      );
-    });
-
-    it("maps the value when the value is ok", () => {
-      assert.strictEqual(toMessage(twice(Result.Ok(21))), "Ok: 42");
+    it("returns Ok the mapped value when the value is Ok", () => {
+      assert.strictEqual(toString(twice(Result.Ok(21))), "Ok 42");
     });
   });
 
-  describe("Result.mapError", () => {
-    const exclaim = Result.mapError<string, number, string>((err) => err + "!");
-
-    it("maps the error when the value is an error", () => {
-      assert.strictEqual(
-        toMessage(exclaim(Result.Err("An error"))),
-        "Err: An error!"
-      );
+  describe(".mapError", () => {
+    const shout = Result.mapError<string, any, any>((err: string) => {
+      return err.toUpperCase();
     });
 
-    it("returns Ok when the value is ok", () => {
-      assert.strictEqual(toMessage(exclaim(Result.Ok(42))), "Ok: 42");
+    it("returns Err when the value is Err", () => {
+      assert.strictEqual(toString(shout(Result.Err("message"))), "Err MESSAGE");
+    });
+
+    it("returns Ok the mapped value when the value is Ok", () => {
+      assert.strictEqual(toString(shout(Result.Ok(42))), "Ok 42");
     });
   });
 
-  describe("Result.flatMap", () => {
+  describe(".flatMap", () => {
     const parse = Result.flatMap(parseNumber);
 
-    it("returns Err when the value is an error", () => {
+    it("returns Err when the value is Err", () => {
+      assert.strictEqual(toString(parse(Result.Err("message"))), "Err message");
+    });
+
+    it("returns Ok the mapped value when the value is Ok", () => {
+      assert.strictEqual(toString(parse(Result.Ok("42"))), "Ok 42");
+    });
+  });
+
+  describe(".withDefault", () => {
+    const orZero = Result.withDefault<string, number>(0);
+
+    it("returns the default value when the value is Err", () => {
+      assert.strictEqual(orZero(Result.Err("message")), 0);
+    });
+
+    it("returns the Ok value when the value is Ok", () => {
+      assert.strictEqual(orZero(Result.Ok(42)), 42);
+    });
+  });
+
+  describe(".toMaybe", () => {
+    it("returns Nothing when the value is Err", () => {
       assert.strictEqual(
-        toMessage(parse(Result.Err("An error"))),
-        "Err: An error"
+        toMaybeString(Result.toMaybe(Result.Err("message"))),
+        "Nothing"
       );
     });
 
-    it("returns Ok when the value is ok", () => {
-      assert.strictEqual(toMessage(parse(Result.Ok("42"))), "Ok: 42");
+    it("returns Just when the value is Ok", () => {
+      assert.strictEqual(
+        toMaybeString(Result.toMaybe(Result.Ok(42))),
+        "Just 42"
+      );
     });
   });
 
-  describe("Result.withDefault", () => {
-    const or21 = Result.withDefault(21);
-
-    it("returns the default when the value is Nothing", () => {
-      assert.strictEqual(or21(Result.Err("An error")), 21);
+  describe(".fromMaybe", () => {
+    it("returns Err when the value is Nothing", () => {
+      assert.strictEqual(
+        toString(Result.fromMaybe("message", Maybe.Nothing)),
+        "Err message"
+      );
     });
 
-    it("returns the value when the value is Just", () => {
-      assert.strictEqual(or21(Result.Ok(42)), 42);
-    });
-  });
-
-  describe("Result.toMaybe", () => {
-    const toMessage = Maybe.fold({
-      Nothing: () => "Nothing",
-      Just: (value) => `Just: ${value}`,
-    });
-
-    it("returns Nothing when the value is an error", () => {
-      const maybe = Result.toMaybe(Result.Err("An error"));
-      const message = toMessage(maybe);
-
-      assert.strictEqual(message, "Nothing");
-    });
-
-    it("returns Just when the value is ok", () => {
-      const maybe = Result.toMaybe(Result.Ok(42));
-      const message = toMessage(maybe);
-
-      assert.strictEqual(message, "Just: 42");
-    });
-  });
-
-  describe("Result.fromMaybe", () => {
-    const fromMaybe = Result.fromMaybe<string, number>("An error");
-
-    it("returns Err when the value is nothing", () => {
-      const message = toMessage(fromMaybe(Maybe.Nothing));
-      assert.strictEqual(message, "Err: An error");
-    });
-
-    it("returns Ok when the value is just a value", () => {
-      const message = toMessage(fromMaybe(Maybe.Just(42)));
-      assert.strictEqual(message, "Ok: 42");
+    it("returns Ok when the value is Just", () => {
+      assert.strictEqual(
+        toString(Result.fromMaybe("message", Maybe.Just(42))),
+        "Ok 42"
+      );
     });
   });
 });

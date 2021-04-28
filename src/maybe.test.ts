@@ -1,12 +1,12 @@
 import assert from "assert";
-import { Maybe, MaybePattern } from ".";
+import { Maybe, MaybePattern } from "./maybe";
 
-const pattern: MaybePattern<number, string> = {
-  Just: (value: number) => `the value is just ${value}`,
-  Nothing: () => "the value is nothing",
+const toStringPattern: MaybePattern<number, string> = {
+  Just: (value: number) => `Just ${value}`,
+  Nothing: () => "Nothing",
 };
 
-const toMessage = Maybe.fold(pattern);
+const toString = Maybe.caseOf(toStringPattern);
 
 function parseNumber(value: string): Maybe<number> {
   const n = parseFloat(value);
@@ -19,97 +19,63 @@ function parseNumber(value: string): Maybe<number> {
 }
 
 describe("Maybe", () => {
-  describe("Maybe.caseOf", () => {
+  describe(".caseOf", () => {
     it("calls Nothing when the value is Nothing", () => {
-      const maybe = Maybe.Nothing;
-      const message = Maybe.caseOf(maybe, pattern);
-
-      assert.strictEqual(message, "the value is nothing");
+      assert.strictEqual(toString(Maybe.Nothing), "Nothing");
     });
 
     it("calls Just when the value is Just", () => {
-      const maybe = Maybe.Just(42);
-      const message = Maybe.caseOf(maybe, pattern);
-
-      assert.strictEqual(message, "the value is just 42");
+      assert.strictEqual(toString(Maybe.Just(42)), "Just 42");
     });
   });
 
-  describe("Maybe.fold", () => {
-    it("calls Nothing when the value is Nothing", () => {
-      assert.strictEqual(toMessage(Maybe.Nothing), "the value is nothing");
-    });
-
-    it("calls Just when the value is Just", () => {
-      assert.strictEqual(toMessage(Maybe.Just(42)), "the value is just 42");
-    });
-  });
-
-  describe("Maybe.map", () => {
+  describe(".map", () => {
     const twice = Maybe.map((value: number) => value * 2);
 
     it("returns Nothing when the value is Nothing", () => {
-      assert.strictEqual(
-        toMessage(twice(Maybe.Nothing)),
-        "the value is nothing"
-      );
+      assert.strictEqual(toString(twice(Maybe.Nothing)), "Nothing");
     });
 
     it("returns Just the mapped value when the value is Just", () => {
-      assert.strictEqual(
-        toMessage(twice(Maybe.Just(21))),
-        "the value is just 42"
-      );
+      assert.strictEqual(toString(twice(Maybe.Just(21))), "Just 42");
     });
   });
 
-  describe("Maybe.flatMap", () => {
+  describe(".flatMap", () => {
     const parse = Maybe.flatMap(parseNumber);
 
     it("returns Nothing when the value is Nothing", () => {
-      assert.strictEqual(
-        toMessage(parse(Maybe.Nothing)),
-        "the value is nothing"
-      );
+      assert.strictEqual(toString(parse(Maybe.Nothing)), "Nothing");
     });
 
     it("returns Just the mapped value when the value is Just", () => {
-      assert.strictEqual(
-        toMessage(parse(Maybe.Just("42"))),
-        "the value is just 42"
-      );
+      assert.strictEqual(toString(parse(Maybe.Just("42"))), "Just 42");
     });
   });
 
-  describe("Maybe.withDefault", () => {
-    const or21 = Maybe.withDefault(21);
+  describe(".otherwise", () => {
+    const or21 = Maybe.otherwise<number, number>(21);
 
     it("returns the default when the value is Nothing", () => {
-      assert.strictEqual(or21(Maybe.Nothing), 21);
+      assert.strictEqual(toString(or21(Maybe.Nothing)), "Just 21");
     });
 
     it("returns the value when the value is Just", () => {
-      assert.strictEqual(or21(Maybe.Just(42)), 42);
+      assert.strictEqual(toString(or21(Maybe.Just(42))), "Just 42");
     });
   });
 
-  describe("Maybe.of", () => {
+  describe(".of", () => {
     it("returns the Nothing when the value is undefined", () => {
-      assert.strictEqual(
-        toMessage(Maybe.of<number>(undefined)),
-        "the value is nothing"
-      );
+      assert.strictEqual(toString(Maybe.of<number>(undefined)), "Nothing");
     });
 
     it("returns the Nothing when the value is null", () => {
-      assert.strictEqual(
-        toMessage(Maybe.of<number>(null)),
-        "the value is nothing"
-      );
+      assert.strictEqual(toString(Maybe.of<number>(null)), "Nothing");
     });
 
     it("returns Just when the value is present", () => {
-      assert.strictEqual(toMessage(Maybe.of(42)), "the value is just 42");
+      assert.strictEqual(toString(Maybe.of(42)), "Just 42");
     });
   });
 });

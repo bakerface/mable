@@ -7,7 +7,9 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/index.js",
+    "dist/index.mjs",
+    "dist/index.d.ts"
   ],
   "keywords": [
     "strong",
@@ -16,10 +18,14 @@
     "programming",
     "typescript",
     "maybe",
+    "remotedata",
     "result"
   ],
   "eslintConfig": {
-    "extends": "./node_modules/@bakerface/typescript-starter/eslint"
+    "extends": "./node_modules/@bakerface/typescript-starter/eslint",
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "off"
+    }
   },
   "nyc": {
     "extends": "@bakerface/typescript-starter/nyc"
@@ -30,6 +36,6 @@
     "test": "typescript-starter test 'src/**/*.test.*'"
   },
   "devDependencies": {
-    "@bakerface/typescript-starter": "0.2.1"
+    "@bakerface/typescript-starter": "^0.5.4"
   }
 }

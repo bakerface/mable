@@ -1,92 +1,96 @@
-import { Maps } from "./helpers";
-import * as Maybe from "./maybe";
+import { Maybe } from "./maybe";
+import { CaseOfPattern, OneOf } from "./one-of";
 
-export type Result<E, O> = Err<E> | Ok<O>;
+export type ResultVariants<Err, Ok> = {
+  Err: [err: Err];
+  Ok: [value: Ok];
+};
 
-export interface Err<T> {
-  readonly type: "Err";
-  readonly payload: T;
-}
+export type ResultPattern<Err, Ok, Return> = CaseOfPattern<
+  ResultVariants<Err, Ok>,
+  Return
+>;
 
-export function Err<T>(payload: T): Err<T> {
-  return { type: "Err", payload };
-}
-
-export interface Ok<T> {
-  readonly type: "Ok";
-  readonly payload: T;
-}
-
-export function Ok<T>(payload: T): Ok<T> {
-  return { type: "Ok", payload };
-}
-
-export interface Pattern<E, O, Return> {
-  Err(error: E): Return;
-  Ok(value: O): Return;
-}
-
-export function caseOf<E, O, Return>(
-  result: Result<E, O>,
-  pattern: Pattern<E, O, Return>
-): Return {
-  switch (result.type) {
-    case "Err":
-      return pattern.Err(result.payload);
-
-    case "Ok":
-      return pattern.Ok(result.payload);
+export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
+  static Err<T>(err: T): Result<T, any> {
+    return new Result("Err", err);
   }
-}
 
-export function fold<E, O, Return>(
-  pattern: Pattern<E, O, Return>
-): Maps<Result<E, O>, Return> {
-  return (result) => caseOf(result, pattern);
-}
+  static Ok<T>(value: T): Result<any, T> {
+    return new Result("Ok", value);
+  }
 
-export function map<E, O, T>(fn: Maps<O, T>): Maps<Result<E, O>, Result<E, T>> {
-  return fold<E, O, Result<E, T>>({
-    Err,
-    Ok: (x) => Ok(fn(x)),
-  });
-}
+  static caseOf<Err, Ok, Return>(
+    pattern: ResultPattern<Err, Ok, Return>
+  ): (result: Result<Err, Ok>) => Return {
+    return (result) => result.caseOf(pattern);
+  }
 
-export function mapError<E, O, T>(
-  fn: Maps<E, T>
-): Maps<Result<E, O>, Result<T, O>> {
-  return fold<E, O, Result<T, O>>({
-    Err: (e) => Err(fn(e)),
-    Ok,
-  });
-}
+  static map<Err, Ok, Return>(
+    fn: (value: Ok) => Return
+  ): (result: Result<Err, Ok>) => Result<Err, Return> {
+    return (result) => result.map(fn);
+  }
 
-export function flatMap<E, A, B>(
-  fn: Maps<A, Result<E, B>>
-): Maps<Result<E, A>, Result<E, B>> {
-  return fold<E, A, Result<E, B>>({
-    Err,
-    Ok: fn,
-  });
-}
+  map<Return>(fn: (value: Ok) => Return): Result<Err, Return> {
+    return this.caseOf<Result<Err, Return>>({
+      Err: (err) => Result.Err(err),
+      Ok: (value) => Result.Ok(fn(value)),
+    });
+  }
 
-export function withDefault<E, O>(value: O): Maps<Result<E, O>, O> {
-  return fold<E, O, O>({
-    Err: () => value,
-    Ok: (x) => x,
-  });
-}
+  static flatMap<Err, Ok, Return>(
+    fn: (value: Ok) => Result<Err, Return>
+  ): (result: Result<Err, Ok>) => Result<Err, Return> {
+    return (result) => result.flatMap(fn);
+  }
 
-export function toMaybe<E, O>(result: Result<E, O>): Maybe.Maybe<O> {
-  return caseOf<E, O, Maybe.Maybe<O>>(result, {
-    Err: () => Maybe.Nothing,
-    Ok: Maybe.Just,
-  });
-}
+  flatMap<Return>(fn: (value: Ok) => Result<Err, Return>): Result<Err, Return> {
+    return this.caseOf<Result<Err, Return>>({
+      Err: (err) => Result.Err(err),
+      Ok: (value) => fn(value),
+    });
+  }
 
-export function fromMaybe<E, O>(error: E): Maps<Maybe.Maybe<O>, Result<E, O>> {
-  return Maybe.fold<O, Result<E, O>>({
-    Just: Ok,
-    Nothing: () => Err(error),
-  });
+  static mapError<Err, Ok, Return>(
+    fn: (err: Err) => Return
+  ): (result: Result<Err, Ok>) => Result<Return, Ok> {
+    return (result) => result.mapError(fn);
+  }
+
+  mapError<Return>(fn: (err: Err) => Return): Result<Return, Ok> {
+    return this.caseOf<Result<Return, Ok>>({
+      Err: (err) => Result.Err(fn(err)),
+      Ok: (value) => Result.Ok(value),
+    });
+  }
+
+  static withDefault<Err, Ok>(value: Ok): (result: Result<Err, Ok>) => Ok {
+    return (result) => result.withDefault(value);
+  }
+
+  withDefault(def: Ok): Ok {
+    return this.caseOf<Ok>({
+      Err: () => def,
+      Ok: (value) => value,
+    });
+  }
+
+  static toMaybe<Err, Ok>(result: Result<Err, Ok>): Maybe<Ok> {
+    return result.toMaybe();
+  }
+
+  toMaybe(): Maybe<Ok> {
+    return this.caseOf({
+      Err: () => Maybe.Nothing,
+      Ok: (value) => Maybe.Just(value),
+    });
+  }
+
+  static fromMaybe<Err, Ok>(err: Err, maybe: Maybe<Ok>): Result<Err, Ok> {
+    return maybe.caseOf({
+      Just: (value) => Result.Ok(value),
+      Nothing: () => Result.Err(err),
+    });
+  }
 }

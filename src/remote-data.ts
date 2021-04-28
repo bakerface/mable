@@ -1,136 +1,117 @@
-import { Maps } from "./helpers";
-import * as Maybe from "./maybe";
-import * as Result from "./result";
+import { Maybe } from "./maybe";
+import { CaseOfPattern, OneOf } from "./one-of";
+import { Result } from "./result";
 
-export type RemoteData<F, S> = NotAsked | Loading | Failure<F> | Success<S>;
+export type RemoteDataVariants<Err, Ok> = {
+  NotAsked: [];
+  Loading: [];
+  Failure: [err: Err];
+  Success: [value: Ok];
+};
 
-export interface NotAsked {
-  readonly type: "NotAsked";
-}
+export type RemoteDataPattern<Err, Ok, Return> = CaseOfPattern<
+  RemoteDataVariants<Err, Ok>,
+  Return
+>;
 
-export const NotAsked: NotAsked = { type: "NotAsked" };
+export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
+  static NotAsked = new RemoteData<any, any>("NotAsked");
+  static Loading = new RemoteData<any, any>("Loading");
 
-export interface Loading {
-  readonly type: "Loading";
-}
-
-export const Loading: Loading = { type: "Loading" };
-
-export interface Failure<T> {
-  readonly type: "Failure";
-  readonly payload: T;
-}
-
-export function Failure<T>(payload: T): Failure<T> {
-  return { type: "Failure", payload };
-}
-
-export interface Success<T> {
-  readonly type: "Success";
-  readonly payload: T;
-}
-
-export function Success<T>(payload: T): Success<T> {
-  return { type: "Success", payload };
-}
-
-export interface Pattern<F, S, Return> {
-  NotAsked(): Return;
-  Loading(): Return;
-  Failure(value: F): Return;
-  Success(value: S): Return;
-}
-
-export function caseOf<F, S, Return>(
-  data: RemoteData<F, S>,
-  pattern: Pattern<F, S, Return>
-): Return {
-  switch (data.type) {
-    case "NotAsked":
-      return pattern.NotAsked();
-
-    case "Loading":
-      return pattern.Loading();
-
-    case "Failure":
-      return pattern.Failure(data.payload);
-
-    case "Success":
-      return pattern.Success(data.payload);
+  static Failure<T>(err: T): RemoteData<T, any> {
+    return new RemoteData("Failure", err);
   }
-}
 
-export function fold<F, S, Return>(
-  pattern: Pattern<F, S, Return>
-): Maps<RemoteData<F, S>, Return> {
-  return (data) => caseOf(data, pattern);
-}
+  static Success<T>(value: T): RemoteData<any, T> {
+    return new RemoteData("Success", value);
+  }
 
-export function map<F, S, T>(
-  fn: Maps<S, T>
-): Maps<RemoteData<F, S>, RemoteData<F, T>> {
-  return fold<F, S, RemoteData<F, T>>({
-    NotAsked: () => NotAsked,
-    Loading: () => Loading,
-    Failure,
-    Success: (x) => Success(fn(x)),
-  });
-}
+  static caseOf<Err, Ok, Return>(
+    pattern: RemoteDataPattern<Err, Ok, Return>
+  ): (data: RemoteData<Err, Ok>) => Return {
+    return (data) => data.caseOf(pattern);
+  }
 
-export function mapError<F, S, T>(
-  fn: Maps<F, T>
-): Maps<RemoteData<F, S>, RemoteData<T, S>> {
-  return fold<F, S, RemoteData<T, S>>({
-    NotAsked: () => NotAsked,
-    Loading: () => Loading,
-    Failure: (value) => Failure(fn(value)),
-    Success,
-  });
-}
+  static map<Err, Ok, Return>(
+    fn: (value: Ok) => Return
+  ): (data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
+    return (data) => data.map(fn);
+  }
 
-export function flatMap<F, A, B>(
-  fn: Maps<A, RemoteData<F, B>>
-): Maps<RemoteData<F, A>, RemoteData<F, B>> {
-  return fold<F, A, RemoteData<F, B>>({
-    NotAsked: () => NotAsked,
-    Loading: () => Loading,
-    Failure,
-    Success: fn,
-  });
-}
+  map<Return>(fn: (value: Ok) => Return): RemoteData<Err, Return> {
+    return this.caseOf<RemoteData<Err, Return>>({
+      NotAsked: () => RemoteData.NotAsked,
+      Loading: () => RemoteData.Loading,
+      Failure: (err) => RemoteData.Failure(err),
+      Success: (value) => RemoteData.Success(fn(value)),
+    });
+  }
 
-export function withDefault<F, S>(value: S): Maps<RemoteData<F, S>, S> {
-  return fold<F, S, S>({
-    NotAsked: () => value,
-    Loading: () => value,
-    Failure: () => value,
-    Success: (x) => x,
-  });
-}
+  static flatMap<Err, Ok, Return>(
+    fn: (value: Ok) => RemoteData<Err, Return>
+  ): (data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
+    return (data) => data.flatMap(fn);
+  }
 
-export function toMaybe<F, S>(data: RemoteData<F, S>): Maybe.Maybe<S> {
-  return caseOf<F, S, Maybe.Maybe<S>>(data, {
-    NotAsked: () => Maybe.Nothing,
-    Loading: () => Maybe.Nothing,
-    Failure: () => Maybe.Nothing,
-    Success: Maybe.Just,
-  });
-}
+  flatMap<Return>(
+    fn: (value: Ok) => RemoteData<Err, Return>
+  ): RemoteData<Err, Return> {
+    return this.caseOf<RemoteData<Err, Return>>({
+      NotAsked: () => RemoteData.NotAsked,
+      Loading: () => RemoteData.Loading,
+      Failure: (err) => RemoteData.Failure(err),
+      Success: (value) => fn(value),
+    });
+  }
 
-export function fromMaybe<F, S>(
-  error: F
-): Maps<Maybe.Maybe<S>, RemoteData<F, S>> {
-  return Maybe.fold<S, RemoteData<F, S>>({
-    Just: Success,
-    Nothing: () => Failure(error),
-  });
-}
+  static mapError<Err, Ok, Return>(
+    fn: (err: Err) => Return
+  ): (data: RemoteData<Err, Ok>) => RemoteData<Return, Ok> {
+    return (data) => data.mapError(fn);
+  }
 
-export function fromResult<F, S>(
-  result: Result.Result<F, S>
-): RemoteData<F, S> {
-  return Result.caseOf<F, S, RemoteData<F, S>>(result, {
-    Err: Failure,
-    Ok: Success,
-  });
+  mapError<Return>(fn: (err: Err) => Return): RemoteData<Return, Ok> {
+    return this.caseOf<RemoteData<Return, Ok>>({
+      NotAsked: () => RemoteData.NotAsked,
+      Loading: () => RemoteData.Loading,
+      Failure: (err) => RemoteData.Failure(fn(err)),
+      Success: (value) => RemoteData.Success(value),
+    });
+  }
+
+  static withDefault<Err, Ok>(value: Ok): (data: RemoteData<Err, Ok>) => Ok {
+    return (data) => data.withDefault(value);
+  }
+
+  withDefault(def: Ok): Ok {
+    return this.caseOf<Ok>({
+      Success: (value) => value,
+      _: () => def,
+    });
+  }
+
+  static toMaybe<Err, Ok>(data: RemoteData<Err, Ok>): Maybe<Ok> {
+    return data.toMaybe();
+  }
+
+  toMaybe(): Maybe<Ok> {
+    return this.caseOf({
+      Success: (value) => Maybe.Just(value),
+      _: () => Maybe.Nothing,
+    });
+  }
+
+  static fromMaybe<Err, Ok>(err: Err, maybe: Maybe<Ok>): RemoteData<Err, Ok> {
+    return maybe.caseOf({
+      Just: (value) => RemoteData.Success(value),
+      Nothing: () => RemoteData.Failure(err),
+    });
+  }
+
+  static fromResult<Err, Ok>(result: Result<Err, Ok>): RemoteData<Err, Ok> {
+    return result.caseOf({
+      Err: (err) => RemoteData.Failure(err),
+      Ok: (value) => RemoteData.Success(value),
+    });
+  }
 }
