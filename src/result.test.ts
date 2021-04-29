@@ -1,13 +1,11 @@
 import assert from "assert";
 import { Maybe } from "./maybe";
-import { Result, ResultPattern } from "./result";
+import { Result } from "./result";
 
-const toStringPattern: ResultPattern<string, number, string> = {
+const toString = Result.caseOf({
   Err: (err) => `Err ${err}`,
   Ok: (value) => `Ok ${value}`,
-};
-
-const toString = Result.caseOf(toStringPattern);
+});
 
 const toMaybeString = Maybe.caseOf({
   Just: (value) => `Just ${value}`,

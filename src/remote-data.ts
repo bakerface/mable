@@ -2,14 +2,14 @@ import { Maybe } from "./maybe";
 import { CaseOfPattern, OneOf } from "./one-of";
 import { Result } from "./result";
 
-export type RemoteDataVariants<Err, Ok> = {
+type RemoteDataVariants<Err, Ok> = {
   NotAsked: [];
   Loading: [];
   Failure: [err: Err];
   Success: [value: Ok];
 };
 
-export type RemoteDataPattern<Err, Ok, Return> = CaseOfPattern<
+type RemoteDataPattern<Err, Ok, Return> = CaseOfPattern<
   RemoteDataVariants<Err, Ok>,
   Return
 >;

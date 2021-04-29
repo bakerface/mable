@@ -24,22 +24,22 @@ export type CaseOfPattern<T extends Variants, Return> =
   | ExhaustiveCaseOfPattern<T, Return>
   | PartialCaseOfPattern<T, Return>;
 
-export type ExhaustiveCaseOfPattern<T extends Variants, Return> = {
+type ExhaustiveCaseOfPattern<T extends Variants, Return> = {
   readonly [K in keyof T]: (...args: T[K]) => Return;
 };
 
-export type PartialCaseOfPattern<T extends Variants, Return> = {
+type PartialCaseOfPattern<T extends Variants, Return> = {
   readonly _: () => Return;
 } & Partial<ExhaustiveCaseOfPattern<T, Return>>;
 
-export type Choice<T extends Variants> = Choices<T>[keyof T];
+type Choice<T extends Variants> = Choices<T>[keyof T];
 
-export type Choices<T extends Variants> = {
+type Choices<T extends Variants> = {
   readonly [K in keyof T]: Cons<K, T[K]>;
 };
 
-export interface Variants {
+interface Variants {
   readonly [type: string]: unknown[];
 }
 
-export type Cons<A, B extends any[]> = [A, ...B];
+type Cons<A, B extends any[]> = [A, ...B];

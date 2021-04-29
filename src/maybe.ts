@@ -1,11 +1,11 @@
 import { CaseOfPattern, OneOf } from "./one-of";
 
-export type MaybeVariants<T> = {
+type MaybeVariants<T> = {
   Nothing: [];
   Just: [value: T];
 };
 
-export type MaybePattern<T, R> = CaseOfPattern<MaybeVariants<T>, R>;
+type MaybePattern<T, R> = CaseOfPattern<MaybeVariants<T>, R>;
 
 export class Maybe<T> extends OneOf<MaybeVariants<T>> {
   static Nothing = new Maybe<any>("Nothing");

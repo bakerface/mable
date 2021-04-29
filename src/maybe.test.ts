@@ -1,12 +1,10 @@
 import assert from "assert";
-import { Maybe, MaybePattern } from "./maybe";
+import { Maybe } from "./maybe";
 
-const toStringPattern: MaybePattern<number, string> = {
+const toString = Maybe.caseOf({
   Just: (value: number) => `Just ${value}`,
   Nothing: () => "Nothing",
-};
-
-const toString = Maybe.caseOf(toStringPattern);
+});
 
 function parseNumber(value: string): Maybe<number> {
   const n = parseFloat(value);

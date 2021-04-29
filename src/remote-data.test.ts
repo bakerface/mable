@@ -1,16 +1,14 @@
 import assert from "assert";
 import { Maybe } from "./maybe";
-import { RemoteData, RemoteDataPattern } from "./remote-data";
+import { RemoteData } from "./remote-data";
 import { Result } from "./result";
 
-const toStringPattern: RemoteDataPattern<string, number, string> = {
+const toString = RemoteData.caseOf({
   NotAsked: () => "NotAsked",
   Loading: () => "Loading",
   Failure: (err) => `Failure ${err}`,
   Success: (value) => `Success ${value}`,
-};
-
-const toString = RemoteData.caseOf(toStringPattern);
+});
 
 const toMaybeString = Maybe.caseOf({
   Just: (value) => `Just ${value}`,

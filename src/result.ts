@@ -1,12 +1,12 @@
 import { Maybe } from "./maybe";
 import { CaseOfPattern, OneOf } from "./one-of";
 
-export type ResultVariants<Err, Ok> = {
+type ResultVariants<Err, Ok> = {
   Err: [err: Err];
   Ok: [value: Ok];
 };
 
-export type ResultPattern<Err, Ok, Return> = CaseOfPattern<
+type ResultPattern<Err, Ok, Return> = CaseOfPattern<
   ResultVariants<Err, Ok>,
   Return
 >;
