@@ -2,8 +2,8 @@ import { Maybe } from "./maybe";
 import { CaseOfPattern, OneOf } from "./one-of";
 
 type ResultVariants<Err, Ok> = {
-  Err: [err: Err];
-  Ok: [value: Ok];
+  Err: Err;
+  Ok: Ok;
 };
 
 type ResultPattern<Err, Ok, Return> = CaseOfPattern<

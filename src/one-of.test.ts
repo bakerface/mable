@@ -1,10 +1,10 @@
 import assert from "assert";
 import { OneOf } from "./one-of";
 
-class Example extends OneOf<{ A: []; B: [] }> {
-  static A = new Example("A");
-  static B = new Example("B");
-  static C = new Example("C" as "A");
+class Example extends OneOf<{ A: void; B: void }> {
+  static A = new Example("A", undefined);
+  static B = new Example("B", undefined);
+  static C = new Example("C" as "A", undefined);
 }
 
 describe("OneOf", () => {

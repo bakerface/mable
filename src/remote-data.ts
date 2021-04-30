@@ -3,10 +3,10 @@ import { CaseOfPattern, OneOf } from "./one-of";
 import { Result } from "./result";
 
 type RemoteDataVariants<Err, Ok> = {
-  NotAsked: [];
-  Loading: [];
-  Failure: [err: Err];
-  Success: [value: Ok];
+  NotAsked: void;
+  Loading: void;
+  Failure: Err;
+  Success: Ok;
 };
 
 type RemoteDataPattern<Err, Ok, Return> = CaseOfPattern<
@@ -15,8 +15,8 @@ type RemoteDataPattern<Err, Ok, Return> = CaseOfPattern<
 >;
 
 export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
-  static NotAsked = new RemoteData<any, any>("NotAsked");
-  static Loading = new RemoteData<any, any>("Loading");
+  static NotAsked = new RemoteData<any, any>("NotAsked", undefined);
+  static Loading = new RemoteData<any, any>("Loading", undefined);
 
   static Failure<T>(err: T): RemoteData<T, any> {
     return new RemoteData("Failure", err);

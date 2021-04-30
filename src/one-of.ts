@@ -1,15 +1,15 @@
-export class OneOf<T extends Variants> {
+export class OneOf<T> {
   private type: keyof T;
-  private payload: unknown[];
+  private payload: unknown;
 
-  constructor(...args: Choice<T>) {
-    this.type = args.shift() as keyof T;
-    this.payload = args;
+  constructor(...choice: Choice<T>) {
+    this.type = choice[0];
+    this.payload = choice[1];
   }
 
   caseOf<Return>(pattern: CaseOfPattern<T, Return>): Return {
     if (this.type in pattern) {
-      return (pattern[this.type] as any)(...this.payload);
+      return (pattern[this.type] as any)(this.payload);
     }
 
     if ("_" in pattern) {
@@ -20,26 +20,20 @@ export class OneOf<T extends Variants> {
   }
 }
 
-export type CaseOfPattern<T extends Variants, Return> =
+export type CaseOfPattern<T, Return> =
   | ExhaustiveCaseOfPattern<T, Return>
   | PartialCaseOfPattern<T, Return>;
 
-type ExhaustiveCaseOfPattern<T extends Variants, Return> = {
-  readonly [K in keyof T]: (...args: T[K]) => Return;
+type ExhaustiveCaseOfPattern<T, Return> = {
+  readonly [K in keyof T]: (payload: T[K]) => Return;
 };
 
-type PartialCaseOfPattern<T extends Variants, Return> = {
+type PartialCaseOfPattern<T, Return> = {
   readonly _: () => Return;
 } & Partial<ExhaustiveCaseOfPattern<T, Return>>;
 
-type Choice<T extends Variants> = Choices<T>[keyof T];
+type Choice<T> = Choices<T>[keyof T];
 
-type Choices<T extends Variants> = {
-  readonly [K in keyof T]: Cons<K, T[K]>;
+type Choices<T> = {
+  readonly [K in keyof T]: [type: K, payload: T[K]];
 };
-
-interface Variants {
-  readonly [type: string]: unknown[];
-}
-
-type Cons<A, B extends any[]> = [A, ...B];
