@@ -3,13 +3,12 @@
   "version": "0.4.2",
   "description": "A strongly-typed, functional toolbelt for TypeScript and JavaScript",
   "license": "MIT",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/index.js",
-    "dist/index.mjs",
-    "dist/index.d.ts"
+    "dist/*"
   ],
   "keywords": [
     "strong",
@@ -21,21 +20,16 @@
     "remotedata",
     "result"
   ],
-  "eslintConfig": {
-    "extends": "./node_modules/@bakerface/typescript-starter/eslint",
-    "rules": {
-      "@typescript-eslint/no-explicit-any": "off"
-    }
-  },
-  "nyc": {
-    "extends": "@bakerface/typescript-starter/nyc"
-  },
   "scripts": {
-    "prepare": "typescript-starter build src/index.ts",
-    "lint": "typescript-starter lint .",
-    "test": "typescript-starter test 'src/**/*.test.*'"
+    "prepare": "rollup -c",
+    "test": "node --import tsx --test $(find . -name \"*.test.ts\")"
   },
   "devDependencies": {
-    "@bakerface/typescript-starter": "^0.5.4"
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^22.14.0",
+    "rollup": "^4.39.0",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
   }
 }

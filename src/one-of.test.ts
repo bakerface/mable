@@ -1,7 +1,13 @@
-import assert from "assert";
-import { OneOf } from "./one-of";
+import assert from "node:assert";
+import { describe, it } from "node:test";
+import { CaseOfPattern, CaseOfPatternError, OneOf } from "./one-of";
 
-class Example extends OneOf<{ A: void; B: void }> {
+interface ExampleVariants {
+  A: void;
+  B: void;
+}
+
+class Example extends OneOf<ExampleVariants> {
   static A = new Example("A", undefined);
   static B = new Example("B", undefined);
   static C = new Example("C" as "A", undefined);
@@ -28,12 +34,17 @@ describe("OneOf", () => {
     });
 
     it("throws an error for unexpected types", () => {
-      assert.throws(() => {
-        Example.C.caseOf({
-          A: () => "The value is A",
-          B: () => "The value is B",
-        });
-      }, new Error(`The type "C" is not valid.`));
+      const c = Example.C;
+
+      const pattern: CaseOfPattern<ExampleVariants, string> = {
+        A: () => "The value is A",
+        B: () => "The value is B",
+      };
+
+      assert.throws(
+        () => c.caseOf(pattern),
+        new CaseOfPatternError(c, pattern)
+      );
     });
   });
 });

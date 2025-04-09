@@ -16,7 +16,19 @@ export class OneOf<T> {
       return pattern._();
     }
 
-    throw new Error(`The type "${this.type}" is not valid.`);
+    throw new CaseOfPatternError(this, pattern);
+  }
+}
+
+export class CaseOfPatternError<T, Return> extends Error {
+  public readonly value: OneOf<T>;
+  public readonly pattern: CaseOfPattern<T, Return>;
+
+  constructor(value: OneOf<T>, pattern: CaseOfPattern<T, Return>) {
+    super('Unhanded type in pattern. Use "_" for default case.');
+    this.name = "CaseOfPatternError";
+    this.value = value;
+    this.pattern = pattern;
   }
 }
 
