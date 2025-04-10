@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { Maybe } from "./maybe";
+import { Maybe } from "../src";
 
 const toString = Maybe.caseOf({
   Just: (value: number) => `Just ${value}`,

@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { CaseOfPattern, CaseOfPatternError, OneOf } from "./one-of";
+import { CaseOfPattern, CaseOfPatternError, OneOf } from "../src";
 
 interface ExampleVariants {
   A: void;
@@ -43,7 +43,7 @@ describe("OneOf", () => {
 
       assert.throws(
         () => c.caseOf(pattern),
-        new CaseOfPatternError(c, pattern)
+        new CaseOfPatternError(c, pattern),
       );
     });
   });

@@ -21,13 +21,13 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
   }
 
   static caseOf<Err, Ok, Return>(
-    pattern: ResultPattern<Err, Ok, Return>
+    pattern: ResultPattern<Err, Ok, Return>,
   ): (result: Result<Err, Ok>) => Return {
     return (result) => result.caseOf(pattern);
   }
 
   static map<Err, Ok, Return>(
-    fn: (value: Ok) => Return
+    fn: (value: Ok) => Return,
   ): (result: Result<Err, Ok>) => Result<Err, Return> {
     return (result) => result.map(fn);
   }
@@ -40,7 +40,7 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
   }
 
   static flatMap<Err, Ok, Return>(
-    fn: (value: Ok) => Result<Err, Return>
+    fn: (value: Ok) => Result<Err, Return>,
   ): (result: Result<Err, Ok>) => Result<Err, Return> {
     return (result) => result.flatMap(fn);
   }
@@ -53,7 +53,7 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
   }
 
   static mapError<Err, Ok, Return>(
-    fn: (err: Err) => Return
+    fn: (err: Err) => Return,
   ): (result: Result<Err, Ok>) => Result<Return, Ok> {
     return (result) => result.mapError(fn);
   }
@@ -65,13 +65,15 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
     });
   }
 
-  static withDefault<Err, Ok>(value: Ok): (result: Result<Err, Ok>) => Ok {
+  static withDefault<T>(
+    value: T,
+  ): <Err, Ok>(result: Result<Err, Ok>) => T | Ok {
     return (result) => result.withDefault(value);
   }
 
-  withDefault(def: Ok): Ok {
-    return this.caseOf<Ok>({
-      Err: () => def,
+  withDefault<T>(value: T): T | Ok {
+    return this.caseOf<T | Ok>({
+      Err: () => value,
       Ok: (value) => value,
     });
   }
@@ -91,6 +93,19 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
     return maybe.caseOf({
       Just: (value) => Result.Ok(value),
       Nothing: () => Result.Err(err),
+    });
+  }
+
+  static assert<Err, Ok>(result: Result<Err, Ok>): Ok {
+    return result.assert();
+  }
+
+  assert(): Ok {
+    return this.caseOf<Ok>({
+      Err: (err) => {
+        throw err;
+      },
+      Ok: (value) => value,
     });
   }
 }

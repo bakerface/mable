@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { Maybe } from "./maybe";
-import { Result } from "./result";
+import { Maybe, Result } from "../src";
 
 const toString = Result.caseOf({
   Err: (err) => `Err ${err}`,
@@ -73,7 +72,7 @@ describe("Result", () => {
   });
 
   describe(".withDefault", () => {
-    const orZero = Result.withDefault<string, number>(0);
+    const orZero = Result.withDefault(0);
 
     it("returns the default value when the value is Err", () => {
       assert.strictEqual(orZero(Result.Err("message")), 0);
@@ -88,14 +87,14 @@ describe("Result", () => {
     it("returns Nothing when the value is Err", () => {
       assert.strictEqual(
         toMaybeString(Result.toMaybe(Result.Err("message"))),
-        "Nothing"
+        "Nothing",
       );
     });
 
     it("returns Just when the value is Ok", () => {
       assert.strictEqual(
         toMaybeString(Result.toMaybe(Result.Ok(42))),
-        "Just 42"
+        "Just 42",
       );
     });
   });
@@ -104,15 +103,26 @@ describe("Result", () => {
     it("returns Err when the value is Nothing", () => {
       assert.strictEqual(
         toString(Result.fromMaybe("message", Maybe.Nothing)),
-        "Err message"
+        "Err message",
       );
     });
 
     it("returns Ok when the value is Just", () => {
       assert.strictEqual(
         toString(Result.fromMaybe("message", Maybe.Just(42))),
-        "Ok 42"
+        "Ok 42",
       );
+    });
+  });
+
+  describe(".assert", () => {
+    it("throws the Err when the value is Err", () => {
+      const err = new Error("message");
+      assert.throws(() => Result.assert(Result.Err(err)), err);
+    });
+
+    it("returns the Ok value when the value is Ok", () => {
+      assert.strictEqual(Result.assert(Result.Ok(42)), 42);
     });
   });
 });

@@ -27,13 +27,13 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
   }
 
   static caseOf<Err, Ok, Return>(
-    pattern: RemoteDataPattern<Err, Ok, Return>
+    pattern: RemoteDataPattern<Err, Ok, Return>,
   ): (data: RemoteData<Err, Ok>) => Return {
     return (data) => data.caseOf(pattern);
   }
 
   static map<Err, Ok, Return>(
-    fn: (value: Ok) => Return
+    fn: (value: Ok) => Return,
   ): (data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
     return (data) => data.map(fn);
   }
@@ -48,13 +48,13 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
   }
 
   static flatMap<Err, Ok, Return>(
-    fn: (value: Ok) => RemoteData<Err, Return>
+    fn: (value: Ok) => RemoteData<Err, Return>,
   ): (data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
     return (data) => data.flatMap(fn);
   }
 
   flatMap<Return>(
-    fn: (value: Ok) => RemoteData<Err, Return>
+    fn: (value: Ok) => RemoteData<Err, Return>,
   ): RemoteData<Err, Return> {
     return this.caseOf<RemoteData<Err, Return>>({
       NotAsked: () => RemoteData.NotAsked,
@@ -65,7 +65,7 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
   }
 
   static mapError<Err, Ok, Return>(
-    fn: (err: Err) => Return
+    fn: (err: Err) => Return,
   ): (data: RemoteData<Err, Ok>) => RemoteData<Return, Ok> {
     return (data) => data.mapError(fn);
   }
@@ -79,14 +79,16 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
     });
   }
 
-  static withDefault<Err, Ok>(value: Ok): (data: RemoteData<Err, Ok>) => Ok {
+  static withDefault<T>(
+    value: T,
+  ): <Err, Ok>(data: RemoteData<Err, Ok>) => T | Ok {
     return (data) => data.withDefault(value);
   }
 
-  withDefault(def: Ok): Ok {
-    return this.caseOf<Ok>({
+  withDefault<T>(value: T): T | Ok {
+    return this.caseOf<T | Ok>({
       Success: (value) => value,
-      _: () => def,
+      _: () => value,
     });
   }
 

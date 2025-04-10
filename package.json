@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "prepare": "rollup -c",
-    "test": "node --import tsx --test $(find . -name \"*.test.ts\")"
+    "test": "node --import tsx --experimental-test-coverage --test test/main.test.ts"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",

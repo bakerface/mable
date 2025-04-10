@@ -1,8 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { Maybe } from "./maybe";
-import { RemoteData } from "./remote-data";
-import { Result } from "./result";
+import { Maybe, RemoteData, Result } from "../src";
 
 const toString = RemoteData.caseOf({
   NotAsked: () => "NotAsked",
@@ -39,7 +37,7 @@ describe("RemoteData", () => {
     it("calls Failure when the value is Failure", () => {
       assert.strictEqual(
         toString(RemoteData.Failure("message")),
-        "Failure message"
+        "Failure message",
       );
     });
 
@@ -50,7 +48,7 @@ describe("RemoteData", () => {
 
   describe(".map", () => {
     const twice = RemoteData.map<any, number, number>(
-      (value: number) => value * 2
+      (value: number) => value * 2,
     );
 
     it("returns NotAsked when the value is NotAsked", () => {
@@ -64,7 +62,7 @@ describe("RemoteData", () => {
     it("returns Failure when the value is Failure", () => {
       assert.strictEqual(
         toString(twice(RemoteData.Failure("message"))),
-        "Failure message"
+        "Failure message",
       );
     });
 
@@ -89,7 +87,7 @@ describe("RemoteData", () => {
     it("returns Failure when the value is Failure", () => {
       assert.strictEqual(
         toString(shout(RemoteData.Failure("message"))),
-        "Failure MESSAGE"
+        "Failure MESSAGE",
       );
     });
 
@@ -112,20 +110,20 @@ describe("RemoteData", () => {
     it("returns Failure when the value is Failure", () => {
       assert.strictEqual(
         toString(parse(RemoteData.Failure("message"))),
-        "Failure message"
+        "Failure message",
       );
     });
 
     it("returns Success the mapped value when the value is Success", () => {
       assert.strictEqual(
         toString(parse(RemoteData.Success("42"))),
-        "Success 42"
+        "Success 42",
       );
     });
   });
 
   describe(".withDefault", () => {
-    const orZero = RemoteData.withDefault<string, number>(0);
+    const orZero = RemoteData.withDefault(0);
 
     it("returns the default value when the value is NotAsked", () => {
       assert.strictEqual(orZero(RemoteData.NotAsked), 0);
@@ -148,28 +146,28 @@ describe("RemoteData", () => {
     it("returns Nothing when the value is NotAsked", () => {
       assert.strictEqual(
         toMaybeString(RemoteData.toMaybe(RemoteData.NotAsked)),
-        "Nothing"
+        "Nothing",
       );
     });
 
     it("returns Nothing when the value is Loading", () => {
       assert.strictEqual(
         toMaybeString(RemoteData.toMaybe(RemoteData.Loading)),
-        "Nothing"
+        "Nothing",
       );
     });
 
     it("returns Nothing when the value is Failure", () => {
       assert.strictEqual(
         toMaybeString(RemoteData.toMaybe(RemoteData.Failure("message"))),
-        "Nothing"
+        "Nothing",
       );
     });
 
     it("returns Just when the value is Success", () => {
       assert.strictEqual(
         toMaybeString(RemoteData.toMaybe(RemoteData.Success(42))),
-        "Just 42"
+        "Just 42",
       );
     });
   });
@@ -178,14 +176,14 @@ describe("RemoteData", () => {
     it("returns Failure when the value is Nothing", () => {
       assert.strictEqual(
         toString(RemoteData.fromMaybe("message", Maybe.Nothing)),
-        "Failure message"
+        "Failure message",
       );
     });
 
     it("returns Success when the value is Just", () => {
       assert.strictEqual(
         toString(RemoteData.fromMaybe("message", Maybe.Just(42))),
-        "Success 42"
+        "Success 42",
       );
     });
   });
@@ -194,14 +192,14 @@ describe("RemoteData", () => {
     it("returns Failure when the value is Err", () => {
       assert.strictEqual(
         toString(RemoteData.fromResult(Result.Err("message"))),
-        "Failure message"
+        "Failure message",
       );
     });
 
     it("returns Success when the value is Just", () => {
       assert.strictEqual(
         toString(RemoteData.fromResult(Result.Ok(42))),
-        "Success 42"
+        "Success 42",
       );
     });
   });
