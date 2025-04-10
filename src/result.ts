@@ -108,4 +108,35 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
       Ok: (value) => value,
     });
   }
+
+  static combine<T extends Combinable>(results: T): Combine<T> {
+    const errors: Record<string, unknown> = {};
+    const values: Record<string, unknown> = {};
+    let isError = false;
+
+    for (const [key, result] of Object.entries(results)) {
+      result.caseOf({
+        Err: (err) => {
+          isError = true;
+          errors[key] = err;
+        },
+        Ok: (value) => {
+          values[key] = value;
+        },
+      });
+    }
+
+    return (isError ? Result.Err(errors) : Result.Ok(values)) as Combine<T>;
+  }
 }
+
+type Combinable = Record<string, Result<any, any>>;
+type Combine<T> = Result<Combine_Err<T>, Combine_Ok<T>>;
+
+type Combine_Err<T> = {
+  readonly [K in keyof T]?: T[K] extends Result<infer Err, any> ? Err : never;
+};
+
+type Combine_Ok<T> = {
+  readonly [K in keyof T]: T[K] extends Result<any, infer Ok> ? Ok : never;
+};

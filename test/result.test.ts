@@ -123,4 +123,24 @@ describe("Result", () => {
       assert.strictEqual(Result.assert(Result.Ok(42)), 42);
     });
   });
+
+  describe(".combine", () => {
+    it("returns a combined error when some are Err", () => {
+      const result = Result.combine({
+        one: Result.Ok(1),
+        two: Result.Err("error"),
+      });
+
+      assert.deepStrictEqual(result, Result.Err({ two: "error" }));
+    });
+
+    it("returns a combined value when all are Ok", () => {
+      const result = Result.combine({
+        one: Result.Ok(1),
+        two: Result.Ok(2),
+      });
+
+      assert.deepStrictEqual(result, Result.Ok({ one: 1, two: 2 }));
+    });
+  });
 });
