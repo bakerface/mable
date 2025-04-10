@@ -47,9 +47,7 @@ describe("RemoteData", () => {
   });
 
   describe(".map", () => {
-    const twice = RemoteData.map<any, number, number>(
-      (value: number) => value * 2,
-    );
+    const twice = RemoteData.map((value: number) => value * 2);
 
     it("returns NotAsked when the value is NotAsked", () => {
       assert.strictEqual(toString(twice(RemoteData.NotAsked)), "NotAsked");
@@ -72,9 +70,7 @@ describe("RemoteData", () => {
   });
 
   describe(".mapError", () => {
-    const shout = RemoteData.mapError<string, any, any>((err: string) => {
-      return err.toUpperCase();
-    });
+    const shout = RemoteData.mapError((err: string) => err.toUpperCase());
 
     it("returns NotAsked when the value is NotAsked", () => {
       assert.strictEqual(toString(shout(RemoteData.NotAsked)), "NotAsked");

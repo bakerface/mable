@@ -26,9 +26,9 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
     return (result) => result.caseOf(pattern);
   }
 
-  static map<Err, Ok, Return>(
+  static map<Ok, Return>(
     fn: (value: Ok) => Return,
-  ): (result: Result<Err, Ok>) => Result<Err, Return> {
+  ): <Err>(result: Result<Err, Ok>) => Result<Err, Return> {
     return (result) => result.map(fn);
   }
 
@@ -52,9 +52,9 @@ export class Result<Err, Ok> extends OneOf<ResultVariants<Err, Ok>> {
     });
   }
 
-  static mapError<Err, Ok, Return>(
+  static mapError<Err, Return>(
     fn: (err: Err) => Return,
-  ): (result: Result<Err, Ok>) => Result<Return, Ok> {
+  ): <Ok>(result: Result<Err, Ok>) => Result<Return, Ok> {
     return (result) => result.mapError(fn);
   }
 

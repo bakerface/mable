@@ -53,14 +53,26 @@ describe("Maybe", () => {
   });
 
   describe(".otherwise", () => {
-    const or21 = Maybe.otherwise<number, number>(21);
+    const or21 = Maybe.otherwise(21);
 
-    it("returns the default when the value is Nothing", () => {
+    it("returns Just when the value is Nothing", () => {
       assert.strictEqual(toString(or21(Maybe.Nothing)), "Just 21");
     });
 
-    it("returns the value when the value is Just", () => {
+    it("returns Just when the value is Just", () => {
       assert.strictEqual(toString(or21(Maybe.Just(42))), "Just 42");
+    });
+  });
+
+  describe(".withDefault", () => {
+    const or21 = Maybe.withDefault(21);
+
+    it("returns the default when the value is Nothing", () => {
+      assert.strictEqual(or21(Maybe.Nothing), 21);
+    });
+
+    it("returns the value when the value is Just", () => {
+      assert.strictEqual(or21(Maybe.Just(42)), 42);
     });
   });
 

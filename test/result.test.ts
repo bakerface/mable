@@ -34,7 +34,7 @@ describe("Result", () => {
   });
 
   describe(".map", () => {
-    const twice = Result.map<any, number, number>((value: number) => value * 2);
+    const twice = Result.map((value: number) => value * 2);
 
     it("returns Err when the value is Err", () => {
       assert.strictEqual(toString(twice(Result.Err("message"))), "Err message");
@@ -46,9 +46,7 @@ describe("Result", () => {
   });
 
   describe(".mapError", () => {
-    const shout = Result.mapError<string, any, any>((err: string) => {
-      return err.toUpperCase();
-    });
+    const shout = Result.mapError((err: string) => err.toUpperCase());
 
     it("returns Err when the value is Err", () => {
       assert.strictEqual(toString(shout(Result.Err("message"))), "Err MESSAGE");

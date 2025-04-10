@@ -32,9 +32,9 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
     return (data) => data.caseOf(pattern);
   }
 
-  static map<Err, Ok, Return>(
+  static map<Ok, Return>(
     fn: (value: Ok) => Return,
-  ): (data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
+  ): <Err>(data: RemoteData<Err, Ok>) => RemoteData<Err, Return> {
     return (data) => data.map(fn);
   }
 
@@ -64,9 +64,9 @@ export class RemoteData<Err, Ok> extends OneOf<RemoteDataVariants<Err, Ok>> {
     });
   }
 
-  static mapError<Err, Ok, Return>(
+  static mapError<Err, Return>(
     fn: (err: Err) => Return,
-  ): (data: RemoteData<Err, Ok>) => RemoteData<Return, Ok> {
+  ): <Ok>(data: RemoteData<Err, Ok>) => RemoteData<Return, Ok> {
     return (data) => data.mapError(fn);
   }
 
